@@ -1,4 +1,4 @@
-namespace KimsEditor.Animation
+namespace KimsEditor.Animation.CustomEvents
 {
     public class AnimationEvent
     {

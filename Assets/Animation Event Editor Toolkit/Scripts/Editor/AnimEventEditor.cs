@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -11,8 +13,15 @@ namespace KimsEditor.Animation
 {
     public class AnimEventEditor : EditorWindow
     {
+        private AnimationClip _selectedClip;
+        
         [MenuItem("Window/Animation Event Toolkit")]
-        public static void ShowWindow()
+        public static void Init()
+        {
+            ShowWindow();
+        }
+        
+        private static void ShowWindow()
         {
             AnimEventEditor window = GetWindow<AnimEventEditor>("Animation Event Toolkit");
 
@@ -20,18 +29,58 @@ namespace KimsEditor.Animation
             float halfHeight = Screen.currentResolution.height * 0.5f;
             Vector2 minSize = new Vector2(halfWidth, halfHeight);
             
+            window.minSize = minSize; 
             window.position = new Rect(
                 minSize.x - halfWidth * 0.5f,
                 minSize.y - halfHeight * 0.5f,
                 0f,
                 0f);
-
-            window.minSize = minSize; 
             
             window.Show();
         }
 
         private void OnGUI()
+        {
+            DrawTopMenu();
+        }
+
+        private void DrawTopMenu()
+        {
+            GUIStyle style = new GUIStyle();
+            style.padding = new RectOffset(10, 10, 10, 10);
+
+            GUILayout.BeginArea(new Rect(0, 0, position.width, 100));
+            GUILayout.BeginHorizontal(style);
+            _selectedClip = EditorGUILayout.ObjectField(new GUIContent("Animation Clip"), _selectedClip, typeof(AnimationClip), false, GUILayout.Width(300)) as AnimationClip;
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Test", GUILayout.Width(40)))
+            {
+                Debug.Log("Test1");
+            }
+            if (GUILayout.Button("Test", GUILayout.Width(40)))
+            {
+                Debug.Log("Test2");
+            }
+            if (GUILayout.Button("Test", GUILayout.Width(40)))
+            {
+                Debug.Log("Test3");
+            }
+            GUILayout.FlexibleSpace();
+            GUI.backgroundColor = Color.green;
+            if (GUILayout.Button("Add Event", GUILayout.Width(100)))
+            {
+                Debug.Log("Test3");
+            }
+            if (GUILayout.Button("Apply", GUILayout.Width(100)))
+            {
+                Debug.Log("Test3");
+            }
+            GUI.backgroundColor = Color.white;
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
+
+        private void DrawInheritDropdown()
         {
             GUILayoutOption[] options = new GUILayoutOption[3];
 
@@ -39,8 +88,6 @@ namespace KimsEditor.Animation
             {
                 return;
             }
-
-            
 
             Type[] types = typeof(AnimationEvent).Assembly.GetTypes().Where(t => t.IsClass && t.IsSubclassOf(typeof(AnimationEvent))).ToArray();
             
@@ -52,16 +99,5 @@ namespace KimsEditor.Animation
             }
             menu.DropDown(new Rect(20f, 20f, 100, 10));
         }
-        
-        public static Type[] FindInheritedTypes(
-            Type parentType, Assembly assembly)
-        {
-            Type[] allTypes = assembly.GetTypes();
-            ArrayList avTypesAL = new ArrayList();
-
-            return allTypes.Where(
-                t => parentType.IsAssignableFrom(t) && t != parentType).ToArray();
-        }
-
     }
 }
