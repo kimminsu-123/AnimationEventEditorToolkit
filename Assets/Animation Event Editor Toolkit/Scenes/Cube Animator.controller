@@ -11,7 +11,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 6064523642847870992}
-    m_Position: {x: 250, y: 120, z: 0}
+    m_Position: {x: 260, y: 120, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -83,8 +83,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b672c30e00ee39844a12999ef4d676ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventData:
-  - id: 0
-    timeType: 0
-    normalizedTime: 0
-    fixedTime: 0
+  container: {fileID: 0}

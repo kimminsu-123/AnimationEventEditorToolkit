@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1f5372c9c1742efb5c9349815401145, type: 3}
   m_Name: AnimationEventDataContainer
   m_EditorClassIdentifier: 
-  animationEventDataList: []
+  animationEventDataList:
+  - id: 0
+    timeType: 1
+    time: 0
+    title: 123123
