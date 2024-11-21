@@ -5,7 +5,7 @@ namespace Animation_Event_Editor_Toolkit.Scripts.Handler
     public class AnimationEventReceiver : MonoBehaviour
     {
         
-        public void Execute(int id)
+        public void Execute(uint id)
         {
             
         }

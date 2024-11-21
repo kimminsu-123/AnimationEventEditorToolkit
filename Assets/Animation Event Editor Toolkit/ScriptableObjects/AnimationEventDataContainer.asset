@@ -16,4 +16,8 @@ MonoBehaviour:
   - id: 0
     timeType: 1
     time: 0
-    title: 123123
+    title: Player/ShowEffect
+  - id: 2
+    timeType: 0
+    time: 0
+    title: Player/DSFSDF

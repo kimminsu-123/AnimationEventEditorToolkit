@@ -15,7 +15,7 @@ namespace KMS.AnimationToolkit
     [Serializable]
     public struct AnimationEventData 
     {
-        public int id;
+        public uint id;
 
         public TimeType timeType;
         public float time;

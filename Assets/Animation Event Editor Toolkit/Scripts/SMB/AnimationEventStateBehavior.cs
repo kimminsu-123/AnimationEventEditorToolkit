@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Animation_Event_Editor_Toolkit.Scripts.Handler;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ namespace KMS.AnimationToolkit
     public class AnimationEventStateBehavior : StateMachineBehaviour
     {
         public AnimationEventDataContainer container;
+        public List<uint> selectedEvents = new();
         
         private AnimationEventReceiver _receiver;
         private bool _isInitialized;
