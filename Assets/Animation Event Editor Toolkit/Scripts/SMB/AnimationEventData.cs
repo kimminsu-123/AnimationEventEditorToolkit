@@ -18,8 +18,8 @@ namespace KMS.AnimationToolkit
         public int id;
 
         public TimeType timeType;
-        public float normalizedTime;
-        public float fixedTime;
+        public float time;
+        public string title;
         
         public bool HasCalled { get; private set; }
 
@@ -33,10 +33,10 @@ namespace KMS.AnimationToolkit
             switch (timeType)
             {
                 case TimeType.Normalized:
-                    HasCalled = info.normalizedTime >= normalizedTime;
+                    HasCalled = info.normalizedTime >= time;
                     break;
                 case TimeType.Fixed:
-                    HasCalled = info.normalizedTime * info.length >= fixedTime;
+                    HasCalled = info.normalizedTime * info.length >= time;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -15,6 +15,7 @@ namespace KMS.AnimationToolkit
         private SerializedProperty _dataListProperty;
         
         private ReorderableList _reorderableList;
+        private float _totalHeight;
 
         private void OnEnable()
         {
@@ -26,7 +27,7 @@ namespace KMS.AnimationToolkit
                     multiSelect = true
                 };
             _reorderableList.drawElementCallback += DrawElement;
-            _reorderableList.elementHeightCallback += (i) => EditorGUIUtility.singleLineHeight * 2;
+            _reorderableList.elementHeightCallback += _ => _totalHeight;
         }
         
         private void DrawElement(Rect rect, int index, bool isactive, bool isfocused)
@@ -40,30 +41,35 @@ namespace KMS.AnimationToolkit
             GUIContent content = new GUIContent(property.displayName, property.tooltip);
             EditorGUIUtility.labelWidth = 20f;
             EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width / 2, EditorGUIUtility.singleLineHeight), property, content);
-            
+
             property = element.FindPropertyRelative("timeType");
             content.text = property.displayName;
             content.tooltip = property.tooltip;
             EditorGUIUtility.labelWidth = 80f;
             EditorGUI.PropertyField(new Rect(rect.x + rect.width / 2 + 10, rect.y, rect.width / 2 - 10, EditorGUIUtility.singleLineHeight), property, content);
+            _totalHeight = EditorGUIUtility.singleLineHeight;
 
             switch (property.enumValueIndex)
             {
                 case (int) TimeType.Normalized:
-                    property = element.FindPropertyRelative("normalizedTime");
-                    content.text = property.displayName;
-                    content.tooltip = property.tooltip;
-                    EditorGUIUtility.labelWidth = 100f;
-                    EditorGUI.PropertyField(new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width, EditorGUIUtility.singleLineHeight), property, content);
+                    property = element.FindPropertyRelative("time");
+                    content.text = "normalized Time";
                     break;
                 case (int) TimeType.Fixed:
-                    property = element.FindPropertyRelative("fixedTime");
-                    content.text = property.displayName;
-                    content.tooltip = property.tooltip;
-                    EditorGUIUtility.labelWidth = 80f;
-                    EditorGUI.PropertyField(new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width, EditorGUIUtility.singleLineHeight), property, content);
+                    property = element.FindPropertyRelative("time");
+                    content.text = "fixed Time";
                     break;
             }
+            EditorGUIUtility.labelWidth = 100f;
+            EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
+            _totalHeight += EditorGUIUtility.singleLineHeight + 3;
+
+            property = element.FindPropertyRelative("title");
+            content.text = property.displayName;
+            content.tooltip = property.tooltip;
+            EditorGUIUtility.labelWidth = 50;
+            EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
+            _totalHeight += EditorGUIUtility.singleLineHeight + 3;
             
             EditorGUIUtility.labelWidth = originalLabelWidth;
         }
