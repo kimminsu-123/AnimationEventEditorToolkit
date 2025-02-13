@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data;
 using Animation_Event_Editor_Toolkit.Scripts.Handler;
 using UnityEngine;
 
@@ -26,7 +27,7 @@ namespace KMS.AnimationToolkit
                 data.Reset();
             }
         }
-
+        
         public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
             foreach (var data in container.AnimationEventDataList)
@@ -34,10 +35,20 @@ namespace KMS.AnimationToolkit
                 if (!data.HasCalled && data.HasReachedTime(stateInfo))
                 {
                     _receiver.Execute(data.id);
+                    data.Call();
+                }
+            }
+            
+            foreach (var data in container.AnimationEventDataList)
+            {
+                if (data.loop && data.HasCalled && stateInfo.normalizedTime % 1f < Time.deltaTime / stateInfo.length)
+                {
+                    data.Reset();
                 }
             }
         }
 
+        
         private void Initialize(Animator animator)
         {
             _isInitialized = true;

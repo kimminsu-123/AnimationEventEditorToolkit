@@ -55,18 +55,26 @@ namespace KMS.AnimationToolkit
             {
                 case (int) TimeType.Normalized:
                     property = element.FindPropertyRelative("time");
-                    content.text = "normalized Time";
+                    EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width / 3, EditorGUIUtility.singleLineHeight), "Normalized Time");
+                    property.floatValue = EditorGUI.Slider(new Rect(rect.x + rect.width / 3, rect.y + _totalHeight + 3, rect.width * 0.67f, EditorGUIUtility.singleLineHeight), property.floatValue, 0f, 1f);
                     break;
-                case (int) TimeType.Fixed:
+                /*case (int) TimeType.Fixed:
                     property = element.FindPropertyRelative("time");
-                    content.text = "fixed Time";
-                    break;
+                    content.text = "Fixed Time";
+                    EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
+                    break;*/
             }
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
             _totalHeight += EditorGUIUtility.singleLineHeight + 3;
             
             EditorGUIUtility.labelWidth = 50;
             property = element.FindPropertyRelative("title");
+            content.text = property.displayName;
+            content.tooltip = property.tooltip;
+            EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
+            _totalHeight += EditorGUIUtility.singleLineHeight + 3;
+            
+            EditorGUIUtility.labelWidth = 50;
+            property = element.FindPropertyRelative("loop");
             content.text = property.displayName;
             content.tooltip = property.tooltip;
             EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditorInternal;
 using UnityEngine;
+using AnimatorController = UnityEditor.Animations.AnimatorController;
 
 namespace KMS.AnimationToolkit
 {
@@ -36,8 +38,35 @@ namespace KMS.AnimationToolkit
             _selectedEventIdReorderableList.drawElementCallback += DrawElement;
             _selectedEventIdReorderableList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "Selected Events");
             _selectedEventIdReorderableList.elementHeightCallback += _ => _totalHeight;
-        }
 
+            EditorApplication.update += UpdatePreview;
+        }
+        
+        private void OnDisable()
+        {
+            EditorApplication.update -= UpdatePreview;
+        }
+        
+        private void UpdatePreview()
+        {
+            if (!_usePreview) return;
+            
+            AnimationEventUtils.GetCurrentAnimatorAndController(out AnimatorController ignore, out Animator animator);
+            StateMachineBehaviourContext[] contexts = AnimatorController.FindStateMachineBehaviourContext((AnimationEventStateBehavior)target);
+            foreach (StateMachineBehaviourContext context in contexts)
+            {
+                AnimatorState state = context.animatorObject as AnimatorState;
+                if(state == null) continue;
+                
+                AnimationClip clip = AnimationEventUtils.GetFirstAvailableClip(state.motion);
+                if(clip == null) continue;
+                
+                AnimationMode.BeginSampling();
+                AnimationMode.SampleAnimationClip(animator.gameObject, clip, _previewTime * clip.length);
+                AnimationMode.EndSampling();
+            }
+        }
+        
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -125,8 +154,12 @@ namespace KMS.AnimationToolkit
             EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"{element.title}[{element.id}]", EditorStyles.boldLabel);
             _totalHeight = EditorGUIUtility.singleLineHeight;
 
-            // 애니메이션 시간에 맞춰서 해야함
-            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"{element.title}[{element.id}]", EditorStyles.boldLabel);
+            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"{element.timeType} : ", EditorStyles.boldLabel);
+            element.time = EditorGUI.Slider(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.time, 0f, 1f);
+            _totalHeight += EditorGUIUtility.singleLineHeight;
+
+            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"loop : ", EditorStyles.boldLabel);
+            element.loop = EditorGUI.Toggle(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.loop);
             _totalHeight += EditorGUIUtility.singleLineHeight;
             
             EditorGUIUtility.labelWidth = originalLabelWidth;
@@ -143,6 +176,8 @@ namespace KMS.AnimationToolkit
             if (GUILayout.Button(title))
             {
                 _usePreview = !_usePreview;
+                if(_usePreview) AnimationMode.StartAnimationMode();
+                else AnimationMode.StopAnimationMode();
             }
             GUI.backgroundColor = orgColor;
         }

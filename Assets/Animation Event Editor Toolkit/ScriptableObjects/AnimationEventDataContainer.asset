@@ -14,10 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animationEventDataList:
   - id: 0
-    timeType: 1
-    time: 0
-    title: Player/ShowEffect
-  - id: 2
     timeType: 0
     time: 0
+    title: Player/ShowEffect
+    loop: 1
+  - id: 2
+    timeType: 0
+    time: 0.523
     title: Player/DSFSDF
+    loop: 0
