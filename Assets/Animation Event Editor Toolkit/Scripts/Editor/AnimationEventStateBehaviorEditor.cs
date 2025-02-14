@@ -73,6 +73,8 @@ namespace KMS.AnimationToolkit
             
             EditorGUILayout.PropertyField(_containerSoProperty);
             
+            ValidateReorderableList();
+            
             if (_containerSoProperty.objectReferenceValue != null)
             {
                 DrawAddButton();
@@ -85,6 +87,19 @@ namespace KMS.AnimationToolkit
             serializedObject.ApplyModifiedProperties();
         }
 
+        private void ValidateReorderableList()
+        {
+            for (int i = _selectedEventIds.Count - 1; i >= 0; i--)
+            {
+                var id = _selectedEventIds[i];
+                var found = _container.AnimationEventDataList.FirstOrDefault(x => x.id.Equals(id));
+                if (found == null)
+                {
+                    _selectedEventIds.Remove(id);
+                }
+            }
+        }
+        
         private void DrawAddButton()
         {
             string[] options = _container.AnimationEventDataList.Select(x => $"{x.title}[{x.id}]").ToArray();
@@ -146,6 +161,7 @@ namespace KMS.AnimationToolkit
             var element =
                 _container.AnimationEventDataList.First(x =>
                     x.id.Equals(_selectedEventIdReorderableList.list[index])); 
+            
 
             float originalLabelWidth = EditorGUIUtility.labelWidth;
             rect.y += 2;
@@ -154,11 +170,19 @@ namespace KMS.AnimationToolkit
             EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"{element.title}[{element.id}]", EditorStyles.boldLabel);
             _totalHeight = EditorGUIUtility.singleLineHeight;
 
-            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"{element.timeType} : ", EditorStyles.boldLabel);
-            element.time = EditorGUI.Slider(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.time, 0f, 1f);
+            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"{element.timeType}   ");
+            switch (element.timeType)
+            {
+                case TimeType.Entered:
+                case TimeType.Exited:
+                    break;
+                case TimeType.Normalized:
+                    element.time = EditorGUI.Slider(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.time, 0f, 1f);
+                    break;
+            }
             _totalHeight += EditorGUIUtility.singleLineHeight;
 
-            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"loop : ", EditorStyles.boldLabel);
+            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"loop : ");
             element.loop = EditorGUI.Toggle(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.loop);
             _totalHeight += EditorGUIUtility.singleLineHeight;
             

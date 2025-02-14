@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 451069187}
   - component: {fileID: 451069186}
   - component: {fileID: 451069191}
+  - component: {fileID: 451069192}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -261,6 +262,52 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fcda1ddeeab84a0a9468bbc6fbe9a9fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  container: {fileID: 11400000, guid: 7c3a92b9b35f9da4394d36135e4af271, type: 2}
+  mappedEvents:
+  - id: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 451069192}
+          m_TargetAssemblyTypeName: AnimationEventTest, Assembly-CSharp
+          m_MethodName: Test1
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - id: 2
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 451069192}
+          m_TargetAssemblyTypeName: AnimationEventTest, Assembly-CSharp
+          m_MethodName: Test2
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &451069192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451069185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcda607da56ce2b4a821ca35f84608f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &705507993

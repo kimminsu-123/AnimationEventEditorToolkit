@@ -1,13 +1,12 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace KMS.AnimationToolkit
 {
     public enum TimeType
     {
+        Entered,
+        Exited,
         Normalized,
         //Fixed, 일단은 사용하지 않는 것으로 설정
     }
@@ -22,32 +21,16 @@ namespace KMS.AnimationToolkit
         public string title;
         public bool loop;
         
-        public bool HasCalled { get; private set; }
-
-        public void Reset()
-        {
-            HasCalled = false;
-        }
-
-        public void Call()
-        {
-            HasCalled = true;
-        }
-
-        public void Repeat(AnimatorStateInfo stateInfo)
-        {
-            if (stateInfo.loop)
-            {
-                
-            }
-        }
+        public bool HasCalled { get; set; }
 
         public bool HasReachedTime(AnimatorStateInfo info)
         {
+            bool ret = false;
+            
             switch (timeType)
             {
                 case TimeType.Normalized:
-                    HasCalled = !HasCalled && (info.normalizedTime % 1f >= time);
+                    ret = !HasCalled && (info.normalizedTime % 1f >= time);
                     break;
                 /*case TimeType.Fixed:
                     HasCalled = info.normalizedTime * info.length >= time;
@@ -56,7 +39,7 @@ namespace KMS.AnimationToolkit
                     throw new ArgumentOutOfRangeException();
             }
 
-            return HasCalled;
+            return ret;
         }
     }
 }

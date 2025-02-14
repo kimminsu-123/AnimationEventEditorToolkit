@@ -16,10 +16,10 @@ MonoBehaviour:
   - id: 0
     timeType: 0
     time: 0
-    title: Player/ShowEffect
+    title: Test1
     loop: 1
   - id: 2
-    timeType: 0
-    time: 0.523
-    title: Player/DSFSDF
-    loop: 0
+    timeType: 2
+    time: 0.5
+    title: Test/Test2
+    loop: 1

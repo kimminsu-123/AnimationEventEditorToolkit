@@ -22,10 +22,8 @@ namespace KMS.AnimationToolkit
             _target = target as AnimationEventDataContainer;
             _dataListProperty = serializedObject.FindProperty("animationEventDataList");
             
-            _reorderableList = new ReorderableList(serializedObject, _dataListProperty, true, true, false, false)
-                {
-                    multiSelect = true
-                };
+            _reorderableList = new ReorderableList(serializedObject, _dataListProperty, true, true, false, false);
+            _reorderableList.multiSelect = true;
             _reorderableList.drawElementCallback += DrawElement;
             _reorderableList.drawHeaderCallback += (r) => GUI.Label(r, "Animation Data");
             _reorderableList.elementHeightCallback += _ => _totalHeight;
@@ -50,10 +48,13 @@ namespace KMS.AnimationToolkit
             EditorGUI.PropertyField(new Rect(rect.x + rect.width / 2 + 10, rect.y, rect.width / 2 - 10, EditorGUIUtility.singleLineHeight), property, content);
             _totalHeight = EditorGUIUtility.singleLineHeight;
             
-            EditorGUIUtility.labelWidth = 100f;
             switch (property.enumValueIndex)
             {
+                case (int) TimeType.Entered:
+                case (int) TimeType.Exited:
+                    break;
                 case (int) TimeType.Normalized:
+                    EditorGUIUtility.labelWidth = 100f;
                     property = element.FindPropertyRelative("time");
                     EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width / 3, EditorGUIUtility.singleLineHeight), "Normalized Time");
                     property.floatValue = EditorGUI.Slider(new Rect(rect.x + rect.width / 3, rect.y + _totalHeight + 3, rect.width * 0.67f, EditorGUIUtility.singleLineHeight), property.floatValue, 0f, 1f);
@@ -65,7 +66,7 @@ namespace KMS.AnimationToolkit
                     break;*/
             }
             _totalHeight += EditorGUIUtility.singleLineHeight + 3;
-            
+
             EditorGUIUtility.labelWidth = 50;
             property = element.FindPropertyRelative("title");
             content.text = property.displayName;
