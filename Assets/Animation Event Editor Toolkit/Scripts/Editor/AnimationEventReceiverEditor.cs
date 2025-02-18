@@ -24,7 +24,7 @@ namespace KMS.AnimationToolkit
 			if (_receiver == null) return;
 
 			_containerProperty = serializedObject.FindProperty("container");
-
+			
 			_reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("mappedEvents"), true, true, false, false);
 			_reorderableList.drawElementCallback += DrawElement;
 			_reorderableList.drawHeaderCallback += (r) => GUI.Label(r, "Registered Events");
@@ -34,19 +34,17 @@ namespace KMS.AnimationToolkit
 		public override void OnInspectorGUI()
 		{
 			serializedObject.Update();
-			
-			EditorGUILayout.PropertyField(_containerProperty);
-			
-			ValidateReorderableList();
 
-			if (_containerProperty != null)
+			EditorGUILayout.PropertyField(_containerProperty);
+
+			if (_containerProperty.objectReferenceValue != null)
 			{
+				ValidateReorderableList();
 				DrawContainerIds();
 				DrawAddButton();
 				DrawRemoveButton();
+				_reorderableList.DoLayoutList();
 			}
-
-			_reorderableList.DoLayoutList();
 			
 			serializedObject.ApplyModifiedProperties();
 		}

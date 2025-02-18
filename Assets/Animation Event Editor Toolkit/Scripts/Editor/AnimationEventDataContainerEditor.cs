@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -8,122 +9,84 @@ namespace KMS.AnimationToolkit
     [CustomEditor(typeof(AnimationEventDataContainer), true)]
     public class AnimationEventDataContainerEditor : Editor
     {
-        private AnimationEventDataContainer _target;
-        private SerializedProperty _dataListProperty;
-        
+        private readonly GUIHelpLabel _helpLabel = new(
+            @"만약 올바르게 수정하고 싶다면 State Machine Behavior 에 AnimationEventStateBehavior Component 를 추가하여 
+프리뷰를 보면서 작업하세요
+Id 값은 중복될 수 없습니다. 중복된 Id 값이 존재한다면 수정하세요!");
+
         private ReorderableList _reorderableList;
         private float _totalHeight;
-        
-        private readonly string _helpTextEng = @"If you want to modify correctly, please add AnimationEventStateBehavior Component in the State Machine Behavior and check with preview.";
-        private readonly string _helpTextKor = @"만약 올바르게 수정하고 싶다면 State Machine Behavior 에 AnimationEventStateBehavior Component 를 추가하여 프리뷰를 보면서 작업하세요";
 
         private void OnEnable()
         {
-            _target = target as AnimationEventDataContainer;
-            _dataListProperty = serializedObject.FindProperty("animationEventDataList");
-            
-            _reorderableList = new ReorderableList(serializedObject, _dataListProperty, true, true, false, false);
+            _reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("animationEventDataList"), true, true, true, true);
             _reorderableList.multiSelect = true;
             _reorderableList.drawElementCallback += DrawElement;
             _reorderableList.drawHeaderCallback += (r) => GUI.Label(r, "Animation Data");
             _reorderableList.elementHeightCallback += _ => _totalHeight;
-        }
-        
-        private void DrawElement(Rect rect, int index, bool isactive, bool isfocused)
-        {
-            var element = _dataListProperty.GetArrayElementAtIndex(index);
-
-            float originalLabelWidth = EditorGUIUtility.labelWidth;
-            rect.y += 2;
-
-            EditorGUIUtility.labelWidth = 20f;
-            SerializedProperty property = element.FindPropertyRelative("id");
-            GUIContent content = new GUIContent(property.displayName, property.tooltip);
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width / 2, EditorGUIUtility.singleLineHeight), property, content);
-            
-            EditorGUIUtility.labelWidth = 80f;
-            property = element.FindPropertyRelative("timeType");
-            content.text = property.displayName;
-            content.tooltip = property.tooltip;
-            EditorGUI.PropertyField(new Rect(rect.x + rect.width / 2 + 10, rect.y, rect.width / 2 - 10, EditorGUIUtility.singleLineHeight), property, content);
-            _totalHeight = EditorGUIUtility.singleLineHeight;
-            
-            switch (property.enumValueIndex)
-            {
-                case (int) TimeType.Entered:
-                case (int) TimeType.Exited:
-                    break;
-                case (int) TimeType.Normalized:
-                    EditorGUIUtility.labelWidth = 100f;
-                    property = element.FindPropertyRelative("time");
-                    EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width / 3, EditorGUIUtility.singleLineHeight), "Normalized Time");
-                    property.floatValue = EditorGUI.Slider(new Rect(rect.x + rect.width / 3, rect.y + _totalHeight + 3, rect.width * 0.67f, EditorGUIUtility.singleLineHeight), property.floatValue, 0f, 1f);
-                    break;
-                /*case (int) TimeType.Fixed:
-                    property = element.FindPropertyRelative("time");
-                    content.text = "Fixed Time";
-                    EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
-                    break;*/
-            }
-            _totalHeight += EditorGUIUtility.singleLineHeight + 3;
-
-            EditorGUIUtility.labelWidth = 50;
-            property = element.FindPropertyRelative("title");
-            content.text = property.displayName;
-            content.tooltip = property.tooltip;
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
-            _totalHeight += EditorGUIUtility.singleLineHeight + 3;
-            
-            EditorGUIUtility.labelWidth = 50;
-            property = element.FindPropertyRelative("loop");
-            content.text = property.displayName;
-            content.tooltip = property.tooltip;
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight + 3, rect.width, EditorGUIUtility.singleLineHeight), property, content);
-            _totalHeight += EditorGUIUtility.singleLineHeight + 3;
-            
-            EditorGUIUtility.labelWidth = originalLabelWidth;
+            _reorderableList.onAddCallback += OnAdd;
         }
 
         public override void OnInspectorGUI()
         {
             if (target == null) return;
-            
+
             serializedObject.Update();
 
-            DrawInformation();
-            CreateEventData();
-            RemoveEventData();
-
+            _helpLabel.Draw();
             _reorderableList.DoLayoutList();
-            
+
             serializedObject.ApplyModifiedProperties();
         }
-
-        private void DrawInformation()
+        
+        private void DrawElement(Rect rect, int index, bool isactive, bool isfocused)
         {
-            GUILayout.Label(_helpTextEng, EditorStyles.helpBox);
-            GUILayout.Space(10);
-            GUILayout.Label(_helpTextKor, EditorStyles.helpBox);
-            GUILayout.Space(10);
+            SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
+            GUIPropertyElement idField = new GUIPropertyElement(element.FindPropertyRelative("id"))
+            {
+                Position = new Vector2(rect.x, rect.y + 4f),
+                Size = new Vector2(rect.width, EditorGUIUtility.singleLineHeight)
+            };
+            GUIPropertyElement titleField = new GUIPropertyElement(element.FindPropertyRelative("title"))
+            {
+                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight + 6f),
+                Size = new Vector2(rect.width, EditorGUIUtility.singleLineHeight)
+            };
+            GUIPropertyElement loopField = new GUIPropertyElement(element.FindPropertyRelative("loop"))
+            {
+                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2 + 6f),
+                Size = new Vector2(rect.width, EditorGUIUtility.singleLineHeight)
+            };
+
+            idField.Draw();
+            titleField.Draw();
+            loopField.Draw();
+
+            _totalHeight = EditorGUIUtility.singleLineHeight * 3.5f;
         }
 
-        private void CreateEventData()
+        private void OnAdd(ReorderableList list)
         {
-            if (GUILayout.Button("Add Animation Event Data"))
-            {
-                _target.AnimationEventDataList.Add(new AnimationEventData());
-            }
+            list.serializedProperty.arraySize++;
+            SerializedProperty property = list.serializedProperty.GetArrayElementAtIndex(list.count - 1);
+            
+            property.FindPropertyRelative("id").uintValue = GetNextAvailableId(list);
+            property.FindPropertyRelative("title").stringValue = string.Empty;
+            property.FindPropertyRelative("loop").boolValue = false;
         }
 
-        private void RemoveEventData()
+        private uint GetNextAvailableId(ReorderableList list)
         {
-            if (GUILayout.Button("Remove Animation Event Data"))
+            uint maxId = 0;
+            for (int i = 0; i < list.count; i++)
             {
-                foreach (int idx in _reorderableList.selectedIndices)
+                var idProperty = list.serializedProperty.GetArrayElementAtIndex(i).FindPropertyRelative("id");
+                if (idProperty.uintValue > maxId)
                 {
-                    _target.AnimationEventDataList.RemoveAt(idx);
+                    maxId = idProperty.uintValue;
                 }
             }
+            return maxId + 1;
         }
     }
 }

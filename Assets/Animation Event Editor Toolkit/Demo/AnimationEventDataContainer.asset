@@ -13,13 +13,6 @@ MonoBehaviour:
   m_Name: AnimationEventDataContainer
   m_EditorClassIdentifier: 
   animationEventDataList:
-  - id: 0
-    timeType: 0
-    time: 0
-    title: Test1
-    loop: 1
-  - id: 2
-    timeType: 2
-    time: 0.5
-    title: Test/Test2
-    loop: 1
+  - id: 1
+    title: 
+    loop: 0

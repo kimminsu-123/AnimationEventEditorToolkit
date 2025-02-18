@@ -45,4 +45,104 @@ namespace KMS.AnimationToolkit
 			return null;
 		}
 	}
+
+	public abstract class GUILayoutElement
+	{
+		public abstract void Draw();
+	}
+
+	public class GUIPropertyElement
+	{
+		private readonly SerializedProperty _property;
+		private readonly GUIContent _content;
+
+		public float LabelWidth { get; set; } = 40f;
+		public Vector2 Position { get; set; } = Vector2.zero;
+		public Vector2 Size { get; set; } = Vector2.zero;
+		public SerializedProperty Property => _property;
+		public GUIContent Content => _content;
+		
+		public GUIPropertyElement(SerializedProperty property)
+		{
+			_property = property;
+			_content = new GUIContent(property.displayName, property.tooltip);
+		}
+
+		public virtual void Draw()
+		{
+			float org = EditorGUIUtility.labelWidth;
+			EditorGUIUtility.labelWidth = LabelWidth;
+			EditorGUI.PropertyField(new Rect(Position, Size), Property, _content);
+			EditorGUIUtility.labelWidth = org;
+		}
+	}
+
+	public class GUIHelpLabel : GUILayoutElement
+	{
+		private readonly string _text;
+		
+		public GUIHelpLabel(string txt)
+		{
+			_text = txt;
+		}
+		
+		public override void Draw()
+		{
+			GUILayout.Label(_text, EditorStyles.helpBox);
+		}
+	}
+	
+	public class GUIButton : GUILayoutElement
+	{
+		private readonly string _title;
+		private readonly Action _callback;
+		private readonly Color _backgroundColor;
+		
+		public GUIButton(string title, Action callback, Color backgroundColor = default)
+		{
+			_title = title;
+			_callback = callback;
+			_backgroundColor = backgroundColor;
+		}
+		
+		public override void Draw()
+		{
+			Color org = GUI.backgroundColor;
+			GUI.backgroundColor = _backgroundColor;
+			if (GUILayout.Button(_title))
+			{
+				_callback?.Invoke();
+			}
+			GUI.backgroundColor = org;
+		}
+	}
+	
+	public class GUISliderField : GUIPropertyElement
+	{
+		public string Label { get; set; }
+		public Vector2 Ratio { get; set; }
+		public float Min { get; set; }
+		public float Max { get; set; }
+		
+		public GUISliderField(SerializedProperty property) : base(property)
+		{
+		}
+		
+		public override void Draw()
+		{
+			float org = EditorGUIUtility.labelWidth;
+			EditorGUIUtility.labelWidth = LabelWidth;
+
+			var labelSize = Size;
+			labelSize.x *= Ratio.x;
+			EditorGUI.LabelField(new Rect(Position, labelSize), Label);
+			
+			var sliderPosition = Position;
+			sliderPosition.x += labelSize.x;
+			var sliderSize = Size;
+			sliderSize.x *= Ratio.y;
+			Property.floatValue = EditorGUI.Slider(new Rect(sliderPosition, sliderSize), Property.floatValue, Min, Max);
+			EditorGUIUtility.labelWidth = org;
+		}
+	}
 }

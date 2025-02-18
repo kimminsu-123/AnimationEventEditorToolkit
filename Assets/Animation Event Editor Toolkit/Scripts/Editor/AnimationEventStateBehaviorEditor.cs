@@ -170,7 +170,7 @@ namespace KMS.AnimationToolkit
             EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"{element.title}[{element.id}]", EditorStyles.boldLabel);
             _totalHeight = EditorGUIUtility.singleLineHeight;
 
-            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"{element.timeType}   ");
+            /*EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"{element.timeType}   ");
             switch (element.timeType)
             {
                 case TimeType.Entered:
@@ -179,7 +179,7 @@ namespace KMS.AnimationToolkit
                 case TimeType.Normalized:
                     element.time = EditorGUI.Slider(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.time, 0f, 1f);
                     break;
-            }
+            }*/
             _totalHeight += EditorGUIUtility.singleLineHeight;
 
             EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"loop : ");

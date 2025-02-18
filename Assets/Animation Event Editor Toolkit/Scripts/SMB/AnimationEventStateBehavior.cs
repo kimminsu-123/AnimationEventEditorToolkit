@@ -25,19 +25,21 @@ namespace KMS.AnimationToolkit
             }
             
             foreach (var data in container.AnimationEventDataList)
-            {
+            {/*
                 if (data.timeType == TimeType.Entered)
                 {
                     _receiver.Execute(data.id);
                     data.HasCalled = true;
-                }
+                }*/
             }
         }
         
         public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            foreach (var data in container.AnimationEventDataList)
+            /*foreach (var data in container.AnimationEventDataList)
             {
+                                ret = !HasCalled && (info.normalizedTime % 1f >= time);
+
                 if (!data.HasCalled 
                     && data.timeType == TimeType.Normalized
                     && data.HasReachedTime(stateInfo))
@@ -56,19 +58,19 @@ namespace KMS.AnimationToolkit
                 {
                     data.HasCalled = false;
                 }
-            }
+            }*/
         }
 
         public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex, AnimatorControllerPlayable controller)
         {
-            foreach (var data in container.AnimationEventDataList)
+            /*foreach (var data in container.AnimationEventDataList)
             {
                 if (data.timeType == TimeType.Exited)
                 {
                     _receiver.Execute(data.id);
                     data.HasCalled = true;
                 }
-            }
+            }*/
         }
 
 

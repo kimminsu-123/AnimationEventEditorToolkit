@@ -14,32 +14,13 @@ namespace KMS.AnimationToolkit
     [Serializable]
     public class AnimationEventData 
     {
-        public uint id;
+        [SerializeField] public uint id;
+        [SerializeField] public string title;
+        [SerializeField] public bool loop;
 
-        public TimeType timeType;
-        public float time;
-        public string title;
-        public bool loop;
-        
-        public bool HasCalled { get; set; }
-
-        public bool HasReachedTime(AnimatorStateInfo info)
-        {
-            bool ret = false;
-            
-            switch (timeType)
-            {
-                case TimeType.Normalized:
-                    ret = !HasCalled && (info.normalizedTime % 1f >= time);
-                    break;
-                /*case TimeType.Fixed:
-                    HasCalled = info.normalizedTime * info.length >= time;
-                    break;*/
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            return ret;
-        }
+        public bool HasCalled { get; set; } = false;
+        public uint Id => id;
+        public string Title => title;
+        public bool Loop => loop;
     }
 }
