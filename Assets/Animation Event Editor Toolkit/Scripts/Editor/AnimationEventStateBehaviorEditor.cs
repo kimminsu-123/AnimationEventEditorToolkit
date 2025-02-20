@@ -16,34 +16,33 @@ namespace KMS.AnimationToolkit
         private ReorderableList _eventStateExitList;
         private ReorderableList _eventStateReachedNormalizedTimeList;
 
+        private int _selectedNormalizedEventIndex;
+
         private int _selected;
         private bool _usePreview;
-        private float _previewTime;
 
         private void OnEnable()
         {
             _containerSoProperty = serializedObject.FindProperty("container");
             
             _eventStateEnterList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventStateEnter"), true, true, true, true);
-            _eventStateEnterList.multiSelect = true;
             _eventStateEnterList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Enter State");
             _eventStateEnterList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateEnterList, rect, index, isactive, isfocused, false);
             _eventStateEnterList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
             _eventStateEnterList.onAddDropdownCallback += OnAddDropdown;
 
             _eventStateExitList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventStateExit"), true, true, true, true);
-            _eventStateExitList.multiSelect = true;
             _eventStateExitList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Exit State");
             _eventStateExitList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateExitList, rect, index, isactive, isfocused, false);
             _eventStateExitList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
             _eventStateExitList.onAddDropdownCallback += OnAddDropdown;
 
             _eventStateReachedNormalizedTimeList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventReachedNormalizedTime"), true, true, true, true);
-            _eventStateReachedNormalizedTimeList.multiSelect = true;
             _eventStateReachedNormalizedTimeList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Normalized Time");
             _eventStateReachedNormalizedTimeList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateReachedNormalizedTimeList, rect, index, isactive, isfocused, true);
             _eventStateReachedNormalizedTimeList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 4f + EditorGUIUtility.standardVerticalSpacing;
             _eventStateReachedNormalizedTimeList.onAddDropdownCallback += OnAddDropdown;
+            _eventStateReachedNormalizedTimeList.onSelectCallback += OnSelectNormalizedTimeEvent;
 
             ValidateReorderableList(_eventStateEnterList);
             ValidateReorderableList(_eventStateExitList);
@@ -82,7 +81,7 @@ namespace KMS.AnimationToolkit
         
         private void UpdatePreview()
         {
-            if (!_usePreview) return;
+            if (!_usePreview || _selectedNormalizedEventIndex == -1) return;
             
             AnimationEventUtils.GetCurrentAnimatorAndController(out AnimatorController ignore, out Animator animator);
             StateMachineBehaviourContext[] contexts = AnimatorController.FindStateMachineBehaviourContext((AnimationEventStateBehavior)target);
@@ -93,10 +92,22 @@ namespace KMS.AnimationToolkit
                 
                 AnimationClip clip = AnimationEventUtils.GetFirstAvailableClip(state.motion);
                 if(clip == null) continue;
-                
-                AnimationMode.BeginSampling();
-                AnimationMode.SampleAnimationClip(animator.gameObject, clip, _previewTime * clip.length);
-                AnimationMode.EndSampling();
+
+                try
+                {
+                    SerializedProperty timeField =
+                        _eventStateReachedNormalizedTimeList.serializedProperty.GetArrayElementAtIndex(
+                            _selectedNormalizedEventIndex).FindPropertyRelative("normalizedTime");
+
+                    AnimationMode.BeginSampling();
+                    AnimationMode.SampleAnimationClip(animator.gameObject, clip, timeField.floatValue * clip.length);
+                    AnimationMode.EndSampling();
+                }
+                catch (Exception)
+                {
+                    // ignore
+                    _selectedNormalizedEventIndex = -1;
+                }
             }
         }
         
@@ -118,7 +129,7 @@ namespace KMS.AnimationToolkit
         }
         
         private void DrawElement(ReorderableList list, Rect rect, int index, bool isactive, bool isfocused, bool dispTime)
-        {
+        {   
             SerializedProperty element = list.serializedProperty.GetArrayElementAtIndex(index);
             GUIPropertyElement idField = new GUIPropertyElement(element.FindPropertyRelative("id"))
             {
@@ -144,6 +155,11 @@ namespace KMS.AnimationToolkit
             
             if (dispTime)
             {
+                if (isactive)
+                {
+                    _selectedNormalizedEventIndex = index;
+                }
+                
                 GUISliderField normalizedTimeField = new GUISliderField(element.FindPropertyRelative("normalizedTime"))
                 {
                     Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 3 + 2f),
@@ -200,11 +216,13 @@ namespace KMS.AnimationToolkit
             }
         }
         
+        private void OnSelectNormalizedTimeEvent(ReorderableList list)
+        {
+            _selectedNormalizedEventIndex = list.index;
+        }
+        
         private void DrawPreviewOption()
         {
-            float from = 0f, to = 1f;
-            _previewTime = EditorGUILayout.Slider($"Preview Time [{from}:{to}]", _previewTime, from, to);
-
             string title = _usePreview ? "Enabled Preview" : "Disabled Preview";
             Color backgroundColor = _usePreview ? Color.green: Color.red;
             GUIButton previewButton = new GUIButton(title, () =>
