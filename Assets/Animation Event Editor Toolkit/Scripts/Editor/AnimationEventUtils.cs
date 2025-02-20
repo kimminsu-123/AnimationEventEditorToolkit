@@ -58,7 +58,8 @@ namespace KMS.AnimationToolkit
 
 		public float LabelWidth { get; set; } = 40f;
 		public Vector2 Position { get; set; } = Vector2.zero;
-		public Vector2 Size { get; set; } = Vector2.zero;
+		public float Width { get; set; }
+		public bool Readonly { get; set; } = false;
 		public SerializedProperty Property => _property;
 		public GUIContent Content => _content;
 		
@@ -70,10 +71,16 @@ namespace KMS.AnimationToolkit
 
 		public virtual void Draw()
 		{
+			GUI.enabled = !Readonly;
 			float org = EditorGUIUtility.labelWidth;
 			EditorGUIUtility.labelWidth = LabelWidth;
-			EditorGUI.PropertyField(new Rect(Position, Size), Property, _content);
+
+			float height = EditorGUI.GetPropertyHeight(Property, true); 
+			Rect rect = new Rect(Position, new Vector2(Width, height));
+			EditorGUI.PropertyField(rect, Property, _content, true);
+
 			EditorGUIUtility.labelWidth = org;
+			GUI.enabled = true;
 		}
 	}
 
@@ -133,15 +140,16 @@ namespace KMS.AnimationToolkit
 			float org = EditorGUIUtility.labelWidth;
 			EditorGUIUtility.labelWidth = LabelWidth;
 
-			var labelSize = Size;
-			labelSize.x *= Ratio.x;
-			EditorGUI.LabelField(new Rect(Position, labelSize), Label);
+			float height = EditorGUI.GetPropertyHeight(Property, true);
+			
+			var labelSize = Width * Ratio.x;
+			EditorGUI.LabelField(new Rect(Position, new Vector2(labelSize, height)), Label);
 			
 			var sliderPosition = Position;
-			sliderPosition.x += labelSize.x;
-			var sliderSize = Size;
-			sliderSize.x *= Ratio.y;
-			Property.floatValue = EditorGUI.Slider(new Rect(sliderPosition, sliderSize), Property.floatValue, Min, Max);
+			sliderPosition.x += labelSize;
+			
+			var sliderSize = Width * Ratio.y;
+			Property.floatValue = EditorGUI.Slider(new Rect(sliderPosition, new Vector2(sliderSize, height)), Property.floatValue, Min, Max);
 			EditorGUIUtility.labelWidth = org;
 		}
 	}

@@ -22,8 +22,8 @@ Id 값은 중복될 수 없습니다. 중복된 Id 값이 존재한다면 수정
             _reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("animationEventDataList"), true, true, true, true);
             _reorderableList.multiSelect = true;
             _reorderableList.drawElementCallback += DrawElement;
-            _reorderableList.drawHeaderCallback += (r) => GUI.Label(r, "Animation Data");
             _reorderableList.elementHeightCallback += _ => _totalHeight;
+            _reorderableList.drawHeaderCallback += (r) => GUI.Label(r, "Animation Data");
             _reorderableList.onAddCallback += OnAdd;
         }
 
@@ -44,25 +44,25 @@ Id 값은 중복될 수 없습니다. 중복된 Id 값이 존재한다면 수정
             SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
             GUIPropertyElement idField = new GUIPropertyElement(element.FindPropertyRelative("id"))
             {
-                Position = new Vector2(rect.x, rect.y + 4f),
-                Size = new Vector2(rect.width, EditorGUIUtility.singleLineHeight)
+                Position = new Vector2(rect.x, rect.y + 2f),
+                Width = rect.width
             };
             GUIPropertyElement titleField = new GUIPropertyElement(element.FindPropertyRelative("title"))
             {
-                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight + 6f),
-                Size = new Vector2(rect.width, EditorGUIUtility.singleLineHeight)
+                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight + 2f),
+                Width = rect.width
             };
             GUIPropertyElement loopField = new GUIPropertyElement(element.FindPropertyRelative("loop"))
             {
-                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2 + 6f),
-                Size = new Vector2(rect.width, EditorGUIUtility.singleLineHeight)
+                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2 + 2f),
+                Width = rect.width
             };
 
             idField.Draw();
             titleField.Draw();
             loopField.Draw();
 
-            _totalHeight = EditorGUIUtility.singleLineHeight * 3.5f;
+            _totalHeight = EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
         }
 
         private void OnAdd(ReorderableList list)

@@ -3,24 +3,20 @@ using UnityEngine;
 
 namespace KMS.AnimationToolkit
 {
-    public enum TimeType
-    {
-        Entered,
-        Exited,
-        Normalized,
-        //Fixed, 일단은 사용하지 않는 것으로 설정
-    }
-
     [Serializable]
     public class AnimationEventData 
     {
-        [SerializeField] public uint id;
-        [SerializeField] public string title;
-        [SerializeField] public bool loop;
+        [SerializeField] private uint id;
+        [SerializeField] private string title;
+        
+        [SerializeField] private bool loop;             // 이 값은 각 데이터별로 다를 예정 (따라서 SO 에는 적용 X)
+        [SerializeField] private float normalizedTime;  // 이 값은 각 데이터별로 다를 예정 (따라서 SO 에는 적용 X)
 
-        public bool HasCalled { get; set; } = false;
         public uint Id => id;
         public string Title => title;
         public bool Loop => loop;
+        public float NormalizedTime => normalizedTime;
+        
+        public bool HasCalled { get; set; } = false;
     }
 }

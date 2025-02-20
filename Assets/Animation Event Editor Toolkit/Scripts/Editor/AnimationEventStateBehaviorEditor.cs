@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditorInternal;
@@ -9,17 +10,19 @@ using AnimatorController = UnityEditor.Animations.AnimatorController;
 
 namespace KMS.AnimationToolkit
 {
-    [CanEditMultipleObjects]
-    [CustomEditor(typeof(AnimationEventStateBehavior))]
+    [CustomEditor(typeof(AnimationEventStateBehavior), true)]
     public class AnimationEventStateBehaviorEditor : Editor
     {
+        // todo
+        // 1. reorderable list 를 이용해서 각 이벤트 리스트 만들어주기
+        // 2. + 버튼을 누르면 dropdown 이 나오고 dropdown 에서 선택해주기
+        
         private SerializedProperty _containerSoProperty;
         
-        private AnimationEventDataContainer _container;
-        private List<uint> _selectedEventIds;
-        private ReorderableList _selectedEventIdReorderableList;
+        private ReorderableList _eventStateEnterList;
+        private ReorderableList _eventStateExitList;
+        private ReorderableList _eventStateReachedNormalizedTimeList;
 
-        private float _totalHeight;
         private int _selected;
         private bool _usePreview;
         private float _previewTime;
@@ -28,20 +31,30 @@ namespace KMS.AnimationToolkit
         {
             _containerSoProperty = serializedObject.FindProperty("container");
             
-            AnimationEventStateBehavior sb = (AnimationEventStateBehavior)target;
-            
-            _container = sb.container;
-            _selectedEventIds = sb.selectedEvents;
-            
-            _selectedEventIdReorderableList = new ReorderableList(_selectedEventIds, typeof(uint), true, true, false, false);
-            _selectedEventIdReorderableList.multiSelect = true;
-            _selectedEventIdReorderableList.drawElementCallback += DrawElement;
-            _selectedEventIdReorderableList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "Selected Events");
-            _selectedEventIdReorderableList.elementHeightCallback += _ => _totalHeight;
+            _eventStateEnterList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventStateEnter"), true, true, true, true);
+            _eventStateEnterList.multiSelect = true;
+            _eventStateEnterList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Enter State");
+            _eventStateEnterList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateEnterList, rect, index, isactive, isfocused, false);
+            _eventStateEnterList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
+            _eventStateEnterList.onAddDropdownCallback += OnAddDropdown;
 
+            _eventStateExitList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventStateExit"), true, true, true, true);
+            _eventStateExitList.multiSelect = true;
+            _eventStateExitList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Exit State");
+            _eventStateExitList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateExitList, rect, index, isactive, isfocused, false);
+            _eventStateExitList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
+            _eventStateExitList.onAddDropdownCallback += OnAddDropdown;
+
+            _eventStateReachedNormalizedTimeList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventReachedNormalizedTime"), true, true, true, true);
+            _eventStateReachedNormalizedTimeList.multiSelect = true;
+            _eventStateReachedNormalizedTimeList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Normalized Time");
+            _eventStateReachedNormalizedTimeList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateReachedNormalizedTimeList, rect, index, isactive, isfocused, true);
+            _eventStateReachedNormalizedTimeList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 4f + EditorGUIUtility.standardVerticalSpacing;
+            _eventStateReachedNormalizedTimeList.onAddDropdownCallback += OnAddDropdown;
+            
             EditorApplication.update += UpdatePreview;
         }
-        
+
         private void OnDisable()
         {
             EditorApplication.update -= UpdatePreview;
@@ -73,122 +86,94 @@ namespace KMS.AnimationToolkit
             
             EditorGUILayout.PropertyField(_containerSoProperty);
             
-            ValidateReorderableList();
-            
             if (_containerSoProperty.objectReferenceValue != null)
             {
-                DrawAddButton();
-                DrawRemoveButton();
-                DrawClearButton();
-                _selectedEventIdReorderableList.DoLayoutList();
+                _eventStateEnterList.DoLayoutList();
+                _eventStateExitList.DoLayoutList();
+                _eventStateReachedNormalizedTimeList.DoLayoutList();
                 DrawPreviewOption();
             }
             
             serializedObject.ApplyModifiedProperties();
         }
-
-        private void ValidateReorderableList()
+        
+        private void DrawElement(ReorderableList list, Rect rect, int index, bool isactive, bool isfocused, bool dispTime)
         {
-            for (int i = _selectedEventIds.Count - 1; i >= 0; i--)
+            SerializedProperty element = list.serializedProperty.GetArrayElementAtIndex(index);
+            GUIPropertyElement idField = new GUIPropertyElement(element.FindPropertyRelative("id"))
             {
-                var id = _selectedEventIds[i];
-                var found = _container.AnimationEventDataList.FirstOrDefault(x => x.id.Equals(id));
-                if (found == null)
+                Position = new Vector2(rect.x, rect.y + 2f),
+                Width = rect.width,
+                Readonly = true
+            };
+            GUIPropertyElement titleField = new GUIPropertyElement(element.FindPropertyRelative("title"))
+            {
+                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight + 2f),
+                Width = rect.width,
+                Readonly = true
+            };
+            GUIPropertyElement loopField = new GUIPropertyElement(element.FindPropertyRelative("loop"))
+            {
+                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2 + 2f),
+                Width = rect.width
+            };
+
+            idField.Draw();
+            titleField.Draw();
+            loopField.Draw();
+            
+            if (dispTime)
+            {
+                GUISliderField normalizedTimeField = new GUISliderField(element.FindPropertyRelative("normalizedTime"))
                 {
-                    _selectedEventIds.Remove(id);
+                    Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 3 + 2f),
+                    Width = rect.width,
+                    Label = "Normalized Time",
+                    Ratio = new Vector2(0.3f, 0.7f),
+                    Min = 0f, Max = 1f
+                };
+                normalizedTimeField.Draw();
+            }
+        }
+
+        private void OnAddDropdown(Rect buttonrect, ReorderableList list)
+        {
+            var container = _containerSoProperty.objectReferenceValue as AnimationEventDataContainer;
+            
+            if (container != null)
+            {
+                var menu = new GenericMenu();
+                foreach (AnimationEventData data in container.AnimationEventDataList)
+                {
+                    menu.AddItem(new GUIContent(data.Title), false, obj => OnSelectDropdown(obj, list), data);
                 }
+                menu.DropDown(buttonrect);    
+            }
+        }
+
+        private void OnSelectDropdown(object obj, ReorderableList list)
+        {
+            if (obj is AnimationEventData data)
+            {
+                SerializedProperty listProperty = list.serializedProperty;
+                
+                listProperty.arraySize++;
+                
+                SerializedProperty element = listProperty.GetArrayElementAtIndex(listProperty.arraySize - 1);
+                SerializedProperty title = element.FindPropertyRelative("title");
+                SerializedProperty id = element.FindPropertyRelative("id");
+                SerializedProperty loop = element.FindPropertyRelative("loop");
+                SerializedProperty normalizedTime = element.FindPropertyRelative("normalizedTime");
+
+                title.stringValue = data.Title;
+                id.uintValue = data.Id;
+                loop.boolValue = false;
+                normalizedTime.floatValue = 0f;
+
+                serializedObject.ApplyModifiedProperties();
             }
         }
         
-        private void DrawAddButton()
-        {
-            string[] options = _container.AnimationEventDataList.Select(x => $"{x.title}[{x.id}]").ToArray();
-            
-            _selected = EditorGUILayout.Popup("Select ID/Titles", _selected, options);
-            if (GUILayout.Button("Add Animation Event"))
-            {
-                OnAdd();   
-            }
-        }
-
-        private void OnAdd()
-        {
-            AnimationEventData selectEvent = _container.AnimationEventDataList[_selected];
-            uint id = selectEvent.id;
-            string title = selectEvent.title;
-
-            if (_selectedEventIds.Contains(id))
-            {
-                EditorUtility.DisplayDialog("Error", $"The animation event has already been added. {id}-{title}", "OK");
-                return;
-            }
-            
-            _selectedEventIds.Add(id);
-        }
-
-        private void DrawRemoveButton()
-        {
-            if (GUILayout.Button("Remove Animation Event"))
-            {
-                OnRemove();
-            }
-        }
-
-        private void OnRemove()
-        {
-            if (_selectedEventIdReorderableList.selectedIndices.Count <= 0) return;
-            
-            int[] selectedIndices = _selectedEventIdReorderableList.selectedIndices.ToArray();
-            
-            Array.Reverse(selectedIndices);
-            
-            foreach (var idx in selectedIndices)
-            {
-                _selectedEventIds.Remove((uint)_selectedEventIdReorderableList.list[idx]);
-            }
-        }
-
-        private void DrawClearButton()
-        {
-            if (GUILayout.Button("Clear Animation Events"))
-            {
-                _selectedEventIds.Clear();
-            }
-        }
-        
-        private void DrawElement(Rect rect, int index, bool isactive, bool isfocused)
-        {
-            var element =
-                _container.AnimationEventDataList.First(x =>
-                    x.id.Equals(_selectedEventIdReorderableList.list[index])); 
-            
-
-            float originalLabelWidth = EditorGUIUtility.labelWidth;
-            rect.y += 2;
-            EditorGUIUtility.labelWidth = 20f;
-
-            EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"{element.title}[{element.id}]", EditorStyles.boldLabel);
-            _totalHeight = EditorGUIUtility.singleLineHeight;
-
-            /*EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"{element.timeType}   ");
-            switch (element.timeType)
-            {
-                case TimeType.Entered:
-                case TimeType.Exited:
-                    break;
-                case TimeType.Normalized:
-                    element.time = EditorGUI.Slider(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.time, 0f, 1f);
-                    break;
-            }*/
-            _totalHeight += EditorGUIUtility.singleLineHeight;
-
-            EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"loop : ");
-            element.loop = EditorGUI.Toggle(new Rect(rect.x + rect.width * 0.3f, rect.y + _totalHeight, rect.width * 0.7f, EditorGUIUtility.singleLineHeight), element.loop);
-            _totalHeight += EditorGUIUtility.singleLineHeight;
-            
-            EditorGUIUtility.labelWidth = originalLabelWidth;
-        }
-
         private void DrawPreviewOption()
         {
             float from = 0f, to = 1f;

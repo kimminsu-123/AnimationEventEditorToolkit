@@ -54,7 +54,7 @@ namespace KMS.AnimationToolkit
 			for (int i = _receiver.mappedEvents.Count - 1; i >= 0; i--)
 			{
 				var mappedEvent = _receiver.mappedEvents[i];
-				var found = _receiver.container.AnimationEventDataList.FirstOrDefault(x => x.id.Equals(mappedEvent.id));
+				var found = _receiver.container.AnimationEventDataList.FirstOrDefault(x => x.Id.Equals(mappedEvent.id));
 				if (found == null)
 				{
 					_reorderableList.serializedProperty.DeleteArrayElementAtIndex(i);
@@ -67,7 +67,7 @@ namespace KMS.AnimationToolkit
 			AnimationEventDataContainer container = _containerProperty.objectReferenceValue as AnimationEventDataContainer;
 			if (container != null)
 			{
-				string[] options = container.AnimationEventDataList.Select(x => $"{x.title}[{x.id}]").ToArray();
+				string[] options = container.AnimationEventDataList.Select(x => $"{x.Title}[{x.Id}]").ToArray();
 				_selected = EditorGUILayout.Popup("Select ID/Titles", _selected, options);	
 			}
 		}
@@ -79,7 +79,7 @@ namespace KMS.AnimationToolkit
 			GUI.backgroundColor = Color.green;
 			if (GUILayout.Button("Register Event"))
 			{
-				uint id = _receiver.container.AnimationEventDataList[_selected].id;
+				uint id = _receiver.container.AnimationEventDataList[_selected].Id;
 				MappedEvent found = _receiver.mappedEvents.FirstOrDefault(x => x.id.Equals(id));
 				if (found == null)
 				{
@@ -121,7 +121,7 @@ namespace KMS.AnimationToolkit
 			AnimationEventData info = _receiver.container.AnimationEventDataList.FirstOrDefault();
 			if (info != null)
 			{
-				EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"Title: {info.title}");
+				EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"Title: {info.Title}");
 				_totalHeight += EditorGUIUtility.singleLineHeight;
 
 				SerializedProperty callbackProperty = element.FindPropertyRelative("callback");

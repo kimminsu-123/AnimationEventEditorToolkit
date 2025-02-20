@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: AnimationEventDataContainer
   m_EditorClassIdentifier: 
   animationEventDataList:
-  - id: 1
-    title: 
-    loop: 0
+  - id: 145
+    title: Player/Effect
+    loop: 1
+    normalizedTime: 0
