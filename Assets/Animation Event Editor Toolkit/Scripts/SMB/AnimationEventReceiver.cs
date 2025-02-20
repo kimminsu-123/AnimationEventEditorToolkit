@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,24 +9,54 @@ namespace KMS.AnimationToolkit
     public class MappedEvent
     {
         public uint id;
+        public string title;
         public UnityEvent callback;
 
         public MappedEvent(uint id)
         {
-            this.id = id;
+            this.id = id; 
+            callback = new UnityEvent();
         }
     }
     
     public class AnimationEventReceiver : MonoBehaviour
     {
-        public AnimationEventDataContainer container;
-        public List<MappedEvent> mappedEvents = new();
-        
+        [SerializeField] private AnimationEventDataContainer container;
+        [SerializeField] private List<MappedEvent> mappedEvents;
+
+        private readonly Dictionary<uint, UnityEvent> _dictEvents = new();
+
+        private void Awake()
+        {
+            foreach (MappedEvent mappedEvent in mappedEvents)
+            {
+                _dictEvents.TryAdd(mappedEvent.id, mappedEvent.callback);
+            }
+        }
+
         public void Execute(uint id)
         {
-            MappedEvent evt = mappedEvents.First(x => x.id.Equals(id));
+            if (_dictEvents.TryGetValue(id, out UnityEvent unityEvent))
+            {
+                unityEvent?.Invoke();
+            }
+        }
 
-            evt.callback?.Invoke();
+        public void AddEvent(uint id, UnityAction callback)
+        {
+            if (!_dictEvents.ContainsKey(id))
+            {
+                _dictEvents.Add(id, new UnityEvent());
+            }
+            _dictEvents[id].AddListener(callback);
+        }
+        
+        public void RemoveEvent(uint id, UnityAction callback)
+        {
+            if (_dictEvents.TryGetValue(id, out UnityEvent unityEvent))
+            {
+                unityEvent.RemoveListener(callback);
+            }
         }
     }
 }

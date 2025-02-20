@@ -84,18 +84,20 @@ namespace KMS.AnimationToolkit
 		}
 	}
 
-	public class GUIHelpLabel : GUILayoutElement
+	public class GUILayoutLabel : GUILayoutElement
 	{
 		private readonly string _text;
+		private readonly GUIStyle _style;
 		
-		public GUIHelpLabel(string txt)
+		public GUILayoutLabel(string txt, GUIStyle style)
 		{
 			_text = txt;
+			_style = style;
 		}
 		
 		public override void Draw()
 		{
-			GUILayout.Label(_text, EditorStyles.helpBox);
+			GUILayout.Label(_text, _style);
 		}
 	}
 	

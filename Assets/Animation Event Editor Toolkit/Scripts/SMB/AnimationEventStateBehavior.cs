@@ -13,6 +13,8 @@ namespace KMS.AnimationToolkit
         
         private AnimationEventReceiver _receiver;
         private bool _isInitialized;
+        private uint _nextCallCnt;
+        private uint _prevCallCnt;
         
         public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
@@ -25,6 +27,9 @@ namespace KMS.AnimationToolkit
             {
                 _receiver.Execute(data.Id);
             }
+
+            _nextCallCnt = 0;
+            _prevCallCnt = 0;
         }
         
         private void Initialize(Animator animator)
@@ -36,7 +41,9 @@ namespace KMS.AnimationToolkit
         
         public override void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            foreach (var data in eventReachedNormalizedTime)
+            _nextCallCnt = (uint) stateInfo.normalizedTime;
+            
+            foreach (AnimationEventData data in eventReachedNormalizedTime)
             {
                 if (!data.HasCalled && stateInfo.normalizedTime % 1f >= data.NormalizedTime)
                 {
@@ -45,13 +52,18 @@ namespace KMS.AnimationToolkit
                 }
             }
             
-            foreach (var data in eventReachedNormalizedTime)
+            foreach (AnimationEventData data in eventReachedNormalizedTime)
             {
-                if (data.Loop && data.HasCalled && stateInfo.normalizedTime % 1f < Time.deltaTime / stateInfo.length)
+                if (data.Loop && _nextCallCnt != _prevCallCnt)
                 {
+                    if (!data.HasCalled)
+                    {
+                        _receiver.Execute(data.Id);
+                    }
                     data.HasCalled = false;
                 }
             }
+            _prevCallCnt = _nextCallCnt;
         }
 
         public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex, AnimatorControllerPlayable controller)

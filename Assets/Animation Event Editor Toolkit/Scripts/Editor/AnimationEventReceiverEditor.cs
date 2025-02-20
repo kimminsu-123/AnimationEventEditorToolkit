@@ -2,35 +2,27 @@ using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace KMS.AnimationToolkit
 {
 	[CustomEditor(typeof(AnimationEventReceiver), true)]
 	public class AnimationEventReceiverEditor : Editor
 	{
-		private AnimationEventReceiver _receiver;
-
 		private SerializedProperty _containerProperty;
 		private ReorderableList _reorderableList;
 
-		private int _selected;
-		private float _totalHeight;
-		private bool _foldOut = false;
-		
 		private void OnEnable()
 		{
-			_receiver = target as AnimationEventReceiver;
-
-			if (_receiver == null) return;
-
 			_containerProperty = serializedObject.FindProperty("container");
 			
-			_reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("mappedEvents"), true, true, false, false);
+			_reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("mappedEvents"), true, true, true, true);
+			_reorderableList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "Registered Events");
 			_reorderableList.drawElementCallback += DrawElement;
-			_reorderableList.drawHeaderCallback += (r) => GUI.Label(r, "Registered Events");
-			_reorderableList.elementHeightCallback += _ => _totalHeight;
+			_reorderableList.elementHeightCallback += CalculateElementHeight;
+			_reorderableList.onAddDropdownCallback += OnAddDropdown;
 		}
-
+		
 		public override void OnInspectorGUI()
 		{
 			serializedObject.Update();
@@ -39,102 +31,88 @@ namespace KMS.AnimationToolkit
 
 			if (_containerProperty.objectReferenceValue != null)
 			{
-				ValidateReorderableList();
-				DrawContainerIds();
-				DrawAddButton();
-				DrawRemoveButton();
 				_reorderableList.DoLayoutList();
 			}
 			
 			serializedObject.ApplyModifiedProperties();
 		}
-
-		private void ValidateReorderableList()
-		{
-			for (int i = _receiver.mappedEvents.Count - 1; i >= 0; i--)
-			{
-				var mappedEvent = _receiver.mappedEvents[i];
-				var found = _receiver.container.AnimationEventDataList.FirstOrDefault(x => x.Id.Equals(mappedEvent.id));
-				if (found == null)
-				{
-					_reorderableList.serializedProperty.DeleteArrayElementAtIndex(i);
-				}
-			}
-		}
-
-		private void DrawContainerIds()
-		{
-			AnimationEventDataContainer container = _containerProperty.objectReferenceValue as AnimationEventDataContainer;
-			if (container != null)
-			{
-				string[] options = container.AnimationEventDataList.Select(x => $"{x.Title}[{x.Id}]").ToArray();
-				_selected = EditorGUILayout.Popup("Select ID/Titles", _selected, options);	
-			}
-		}
-
-		private void DrawAddButton()
-		{
-			Color orgColor = GUI.backgroundColor;
-
-			GUI.backgroundColor = Color.green;
-			if (GUILayout.Button("Register Event"))
-			{
-				uint id = _receiver.container.AnimationEventDataList[_selected].Id;
-				MappedEvent found = _receiver.mappedEvents.FirstOrDefault(x => x.id.Equals(id));
-				if (found == null)
-				{
-					_receiver.mappedEvents.Add(new MappedEvent(id));
-				}
-				else
-				{
-					EditorUtility.DisplayDialog("Error", $"The animation event has already been added. {id}", "OK");
-				}
-			}
-			
-			GUI.backgroundColor = orgColor;
-		}
-
-		private void DrawRemoveButton()
-		{
-			Color orgColor = GUI.backgroundColor;
-
-			GUI.backgroundColor = Color.red;
-			if (GUILayout.Button("UnRegister Event"))
-			{
-				foreach (int select in _reorderableList.selectedIndices)
-				{
-					_reorderableList.serializedProperty.DeleteArrayElementAtIndex(select);
-				}
-			}
-			
-			GUI.backgroundColor = orgColor;
-		}
 		
 		private void DrawElement(Rect rect, int index, bool isactive, bool isfocused)
 		{
 			SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-			
-			rect.y += 2;
-			EditorGUI.LabelField(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight), $"ID: {element.FindPropertyRelative("id").uintValue}", EditorStyles.boldLabel);
-			_totalHeight = EditorGUIUtility.singleLineHeight;
-			
-			AnimationEventData info = _receiver.container.AnimationEventDataList.FirstOrDefault();
-			if (info != null)
+			GUIPropertyElement idField = new GUIPropertyElement(element.FindPropertyRelative("id"))
 			{
-				EditorGUI.LabelField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), $"Title: {info.Title}");
-				_totalHeight += EditorGUIUtility.singleLineHeight;
+				Position = new Vector2(rect.x, rect.y + 2f),
+				Width = rect.width,
+				Readonly = true
+			};
+			GUIPropertyElement titleField = new GUIPropertyElement(element.FindPropertyRelative("title"))
+			{
+				Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight + 5f),
+				Width = rect.width,
+				Readonly = true
+			};
+			GUIPropertyElement callbackField = new GUIPropertyElement(element.FindPropertyRelative("callback"))
+			{
+				Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2f + 10f),
+				Width = rect.width,
+			};
 
-				SerializedProperty callbackProperty = element.FindPropertyRelative("callback");
-				_foldOut = EditorGUI.Foldout(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), _foldOut, "Callbacks", true);
-				if (_foldOut)
+			idField.Draw();
+			titleField.Draw();
+			callbackField.Draw();
+		}
+		
+		private float CalculateElementHeight(int index)
+		{
+			SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
+			SerializedProperty callbackProperty = element.FindPropertyRelative("callback");
+    
+			float baseHeight = EditorGUIUtility.singleLineHeight * 2f + 5f;
+			float callbackHeight = EditorGUI.GetPropertyHeight(callbackProperty, true);
+			float padding = 10f;
+    
+			return baseHeight + callbackHeight + padding;
+		}
+		
+		private void OnAddDropdown(Rect buttonrect, ReorderableList list)
+		{
+			var container = _containerProperty.objectReferenceValue as AnimationEventDataContainer;
+            
+			if (container != null)
+			{
+				if (container.AnimationEventDataList.Count <= 0)
 				{
-					EditorGUI.PropertyField(new Rect(rect.x, rect.y + _totalHeight, rect.width, EditorGUIUtility.singleLineHeight), callbackProperty);
-					_totalHeight += EditorGUI.GetPropertyHeight(callbackProperty);	
+					EditorUtility.DisplayDialog("Error", $"연결된 Scriptable Object에 등록된 이벤트가 없습니다.", "OK");
+					return;
 				}
-				else
+                
+				var menu = new GenericMenu();
+				foreach (AnimationEventData data in container.AnimationEventDataList)
 				{
-					_totalHeight += EditorGUIUtility.singleLineHeight;	
+					menu.AddItem(new GUIContent(data.Title), false, obj => OnSelectDropdown(obj, list), data);
 				}
+				menu.DropDown(buttonrect);    
+			}
+		}
+
+		private void OnSelectDropdown(object obj, ReorderableList list)
+		{
+			if (obj is AnimationEventData data)
+			{
+				SerializedProperty listProperty = list.serializedProperty;
+				listProperty.arraySize++;
+                
+				SerializedProperty element = listProperty.GetArrayElementAtIndex(listProperty.arraySize - 1);
+				SerializedProperty id = element.FindPropertyRelative("id");
+				SerializedProperty title = element.FindPropertyRelative("title");
+				SerializedProperty callback = element.FindPropertyRelative("callback");
+				
+				id.uintValue = data.Id;
+				title.stringValue = data.Title;
+				callback.FindPropertyRelative("m_PersistentCalls").FindPropertyRelative("m_Calls").ClearArray();
+				
+				serializedObject.ApplyModifiedProperties();
 			}
 		}
 	}

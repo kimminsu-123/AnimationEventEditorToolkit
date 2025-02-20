@@ -36,7 +36,7 @@ AnimatorController:
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -58,7 +58,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Cube Animation
-  m_Speed: 1
+  m_Speed: 0.3
   m_CycleOffset: 0
   m_Transitions: []
   m_StateMachineBehaviours:
@@ -90,26 +90,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   container: {fileID: 11400000, guid: 7c3a92b9b35f9da4394d36135e4af271, type: 2}
-  eventStateEnter:
-  - id: 1
-    title: TestEvent/Test1
-    loop: 0
-    normalizedTime: 0
-  eventStateExit:
-  - id: 1
-    title: TestEvent/Test1
-    loop: 0
-    normalizedTime: 0
-  - id: 1
-    title: TestEvent/Test1
-    loop: 0
-    normalizedTime: 0
+  eventStateEnter: []
+  eventStateExit: []
   eventReachedNormalizedTime:
+  - id: 2
+    title: TestEvent/Test2
+    loop: 1
+    normalizedTime: 1
   - id: 1
     title: TestEvent/Test1
-    loop: 0
-    normalizedTime: 0.558
-  - id: 1
-    title: TestEvent/Test1
-    loop: 0
-    normalizedTime: 0.165
+    loop: 1
+    normalizedTime: 0.549

@@ -17,3 +17,7 @@ MonoBehaviour:
     title: TestEvent/Test1
     loop: 0
     normalizedTime: 0
+  - id: 2
+    title: TestEvent/Test2
+    loop: 0
+    normalizedTime: 0

@@ -9,10 +9,10 @@ namespace KMS.AnimationToolkit
     [CustomEditor(typeof(AnimationEventDataContainer), true)]
     public class AnimationEventDataContainerEditor : Editor
     {
-        private readonly GUIHelpLabel _helpLabel = new(
+        private readonly GUILayoutLabel _helpLayoutLabel = new(
             @"만약 올바르게 수정하고 싶다면 State Machine Behavior 에 AnimationEventStateBehavior Component 를 추가하여 
 프리뷰를 보면서 작업하세요
-Id 값은 중복될 수 없습니다. 중복된 Id 값이 존재한다면 수정하세요!");
+Id 값은 중복될 수 없습니다. 중복된 Id 값이 존재한다면 수정하세요!", EditorStyles.helpBox);
 
         private ReorderableList _reorderableList;
         private float _totalHeight;
@@ -33,7 +33,7 @@ Id 값은 중복될 수 없습니다. 중복된 Id 값이 존재한다면 수정
 
             serializedObject.Update();
 
-            _helpLabel.Draw();
+            _helpLayoutLabel.Draw();
             _reorderableList.DoLayoutList();
 
             serializedObject.ApplyModifiedProperties();
