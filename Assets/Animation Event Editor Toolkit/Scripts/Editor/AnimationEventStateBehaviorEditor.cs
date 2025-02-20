@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditorInternal;
@@ -13,10 +10,6 @@ namespace KMS.AnimationToolkit
     [CustomEditor(typeof(AnimationEventStateBehavior), true)]
     public class AnimationEventStateBehaviorEditor : Editor
     {
-        // todo
-        // 1. reorderable list 를 이용해서 각 이벤트 리스트 만들어주기
-        // 2. + 버튼을 누르면 dropdown 이 나오고 dropdown 에서 선택해주기
-        
         private SerializedProperty _containerSoProperty;
         
         private ReorderableList _eventStateEnterList;
@@ -51,6 +44,10 @@ namespace KMS.AnimationToolkit
             _eventStateReachedNormalizedTimeList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateReachedNormalizedTimeList, rect, index, isactive, isfocused, true);
             _eventStateReachedNormalizedTimeList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 4f + EditorGUIUtility.standardVerticalSpacing;
             _eventStateReachedNormalizedTimeList.onAddDropdownCallback += OnAddDropdown;
+
+            ValidateReorderableList(_eventStateEnterList);
+            ValidateReorderableList(_eventStateExitList);
+            ValidateReorderableList(_eventStateReachedNormalizedTimeList);
             
             EditorApplication.update += UpdatePreview;
         }
@@ -58,6 +55,29 @@ namespace KMS.AnimationToolkit
         private void OnDisable()
         {
             EditorApplication.update -= UpdatePreview;
+        }
+
+        private void ValidateReorderableList(ReorderableList list)
+        {
+            var container = _containerSoProperty.objectReferenceValue as AnimationEventDataContainer;
+
+            if (container != null)
+            {
+                var listProperty = list.serializedProperty;
+
+                for (int i = listProperty.arraySize - 1; i >= 0; i--)
+                {
+                    var element = listProperty.GetArrayElementAtIndex(i);
+                    var idProperty = element.FindPropertyRelative("id");
+                    var found = container.AnimationEventDataList.Find(x => x.Id.Equals(idProperty.uintValue));
+                    if (found == null)
+                    {
+                        listProperty.DeleteArrayElementAtIndex(i);
+                    }
+                }
+            }
+
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
         
         private void UpdatePreview()
@@ -142,6 +162,12 @@ namespace KMS.AnimationToolkit
             
             if (container != null)
             {
+                if (container.AnimationEventDataList.Count <= 0)
+                {
+                    EditorUtility.DisplayDialog("Error", $"연결된 Scriptable Object에 등록된 이벤트가 없습니다.", "OK");
+                    return;
+                }
+                
                 var menu = new GenericMenu();
                 foreach (AnimationEventData data in container.AnimationEventDataList)
                 {
@@ -180,15 +206,14 @@ namespace KMS.AnimationToolkit
             _previewTime = EditorGUILayout.Slider($"Preview Time [{from}:{to}]", _previewTime, from, to);
 
             string title = _usePreview ? "Enabled Preview" : "Disabled Preview";
-            Color orgColor = GUI.backgroundColor;
-            GUI.backgroundColor = _usePreview ? Color.green: Color.red;
-            if (GUILayout.Button(title))
+            Color backgroundColor = _usePreview ? Color.green: Color.red;
+            GUIButton previewButton = new GUIButton(title, () =>
             {
                 _usePreview = !_usePreview;
                 if(_usePreview) AnimationMode.StartAnimationMode();
                 else AnimationMode.StopAnimationMode();
-            }
-            GUI.backgroundColor = orgColor;
+            }, backgroundColor);
+            previewButton.Draw();
         }
     }
 }

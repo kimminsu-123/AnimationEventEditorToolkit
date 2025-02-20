@@ -52,17 +52,11 @@ Id 값은 중복될 수 없습니다. 중복된 Id 값이 존재한다면 수정
                 Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight + 2f),
                 Width = rect.width
             };
-            GUIPropertyElement loopField = new GUIPropertyElement(element.FindPropertyRelative("loop"))
-            {
-                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2 + 2f),
-                Width = rect.width
-            };
 
             idField.Draw();
             titleField.Draw();
-            loopField.Draw();
 
-            _totalHeight = EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
+            _totalHeight = EditorGUIUtility.singleLineHeight * 2f + EditorGUIUtility.standardVerticalSpacing;
         }
 
         private void OnAdd(ReorderableList list)
