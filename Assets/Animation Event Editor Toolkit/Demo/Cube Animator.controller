@@ -11,7 +11,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 6064523642847870992}
-    m_Position: {x: 260, y: 130, z: 0}
+    m_Position: {x: 350, y: 100, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -92,12 +92,4 @@ MonoBehaviour:
   container: {fileID: 11400000, guid: 7c3a92b9b35f9da4394d36135e4af271, type: 2}
   eventStateEnter: []
   eventStateExit: []
-  eventReachedNormalizedTime:
-  - id: 2
-    title: TestEvent/Test2
-    loop: 1
-    normalizedTime: 1
-  - id: 1
-    title: TestEvent/Test1
-    loop: 1
-    normalizedTime: 0.549
+  eventReachedNormalizedTime: []

@@ -21,13 +21,20 @@ namespace KMS.AnimationToolkit
 			_reorderableList.drawElementCallback += DrawElement;
 			_reorderableList.elementHeightCallback += CalculateElementHeight;
 			_reorderableList.onAddDropdownCallback += OnAddDropdown;
+			
+			ValidateReorderableList(_reorderableList);
 		}
 		
 		public override void OnInspectorGUI()
 		{
 			serializedObject.Update();
 
+			EditorGUI.BeginChangeCheck();
 			EditorGUILayout.PropertyField(_containerProperty);
+			if (EditorGUI.EndChangeCheck())
+			{
+				ValidateReorderableList(_reorderableList);
+			}
 
 			if (_containerProperty.objectReferenceValue != null)
 			{
@@ -35,6 +42,39 @@ namespace KMS.AnimationToolkit
 			}
 			
 			serializedObject.ApplyModifiedProperties();
+		}
+		
+		private void ValidateReorderableList(ReorderableList list)
+		{
+			var container = _containerProperty.objectReferenceValue as AnimationEventDataContainer;
+
+			if (container != null)
+			{
+				var listProperty = list.serializedProperty;
+				if (listProperty.arraySize == 0)
+				{
+					listProperty.ClearArray();
+				}
+				else
+				{
+					for (int i = listProperty.arraySize - 1; i >= 0; i--)
+					{
+						var element = listProperty.GetArrayElementAtIndex(i);
+						var idProperty = element.FindPropertyRelative("id");
+						var found = container.AnimationEventDataList.Find(x => x.Id.Equals(idProperty.uintValue));
+						if (found == null)
+						{
+							listProperty.DeleteArrayElementAtIndex(i);
+						}
+					}   
+				}
+			}
+			else
+			{
+				list.serializedProperty.ClearArray();
+			}
+
+			serializedObject.ApplyModifiedPropertiesWithoutUndo();
 		}
 		
 		private void DrawElement(Rect rect, int index, bool isactive, bool isfocused)

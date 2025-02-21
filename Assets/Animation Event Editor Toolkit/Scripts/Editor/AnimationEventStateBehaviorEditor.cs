@@ -63,17 +63,27 @@ namespace KMS.AnimationToolkit
             if (container != null)
             {
                 var listProperty = list.serializedProperty;
-
-                for (int i = listProperty.arraySize - 1; i >= 0; i--)
+                if (listProperty.arraySize == 0)
                 {
-                    var element = listProperty.GetArrayElementAtIndex(i);
-                    var idProperty = element.FindPropertyRelative("id");
-                    var found = container.AnimationEventDataList.Find(x => x.Id.Equals(idProperty.uintValue));
-                    if (found == null)
-                    {
-                        listProperty.DeleteArrayElementAtIndex(i);
-                    }
+                    listProperty.ClearArray();
                 }
+                else
+                {
+                    for (int i = listProperty.arraySize - 1; i >= 0; i--)
+                    {
+                        var element = listProperty.GetArrayElementAtIndex(i);
+                        var idProperty = element.FindPropertyRelative("id");
+                        var found = container.AnimationEventDataList.Find(x => x.Id.Equals(idProperty.uintValue));
+                        if (found == null)
+                        {
+                            listProperty.DeleteArrayElementAtIndex(i);
+                        }
+                    }   
+                }
+            }
+            else
+            {
+                list.serializedProperty.ClearArray();
             }
 
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -115,7 +125,14 @@ namespace KMS.AnimationToolkit
         {
             serializedObject.Update();
             
+            EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(_containerSoProperty);
+            if (EditorGUI.EndChangeCheck())
+            {
+                ValidateReorderableList(_eventStateEnterList);
+                ValidateReorderableList(_eventStateExitList);
+                ValidateReorderableList(_eventStateReachedNormalizedTimeList);
+            }
             
             if (_containerSoProperty.objectReferenceValue != null)
             {
