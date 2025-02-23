@@ -28,13 +28,13 @@ namespace KMS.AnimationToolkit
             _eventStateEnterList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventStateEnter"), true, true, true, true);
             _eventStateEnterList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Enter State");
             _eventStateEnterList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateEnterList, rect, index, isactive, isfocused, false);
-            _eventStateEnterList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
+            _eventStateEnterList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 2f + EditorGUIUtility.standardVerticalSpacing;
             _eventStateEnterList.onAddDropdownCallback += OnAddDropdown;
 
             _eventStateExitList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventStateExit"), true, true, true, true);
             _eventStateExitList.drawHeaderCallback += (r) => EditorGUI.LabelField(r, "On Exit State");
             _eventStateExitList.drawElementCallback += (rect, index, isactive, isfocused) => DrawElement(_eventStateExitList, rect, index, isactive, isfocused, false);
-            _eventStateExitList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 3f + EditorGUIUtility.standardVerticalSpacing;
+            _eventStateExitList.elementHeightCallback += _ => EditorGUIUtility.singleLineHeight * 2f + EditorGUIUtility.standardVerticalSpacing;
             _eventStateExitList.onAddDropdownCallback += OnAddDropdown;
 
             _eventStateReachedNormalizedTimeList = new ReorderableList(serializedObject, serializedObject.FindProperty("eventReachedNormalizedTime"), true, true, true, true);
@@ -160,15 +160,9 @@ namespace KMS.AnimationToolkit
                 Width = rect.width,
                 Readonly = true
             };
-            GUIPropertyElement loopField = new GUIPropertyElement(element.FindPropertyRelative("loop"))
-            {
-                Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2 + 2f),
-                Width = rect.width
-            };
 
             idField.Draw();
             titleField.Draw();
-            loopField.Draw();
             
             if (dispTime)
             {
@@ -177,6 +171,11 @@ namespace KMS.AnimationToolkit
                     _selectedNormalizedEventIndex = index;
                 }
                 
+                GUIPropertyElement loopField = new GUIPropertyElement(element.FindPropertyRelative("loop"))
+                {
+                    Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 2 + 2f),
+                    Width = rect.width
+                };
                 GUISliderField normalizedTimeField = new GUISliderField(element.FindPropertyRelative("normalizedTime"))
                 {
                     Position = new Vector2(rect.x, rect.y + EditorGUIUtility.singleLineHeight * 3 + 2f),
@@ -185,6 +184,7 @@ namespace KMS.AnimationToolkit
                     Ratio = new Vector2(0.3f, 0.7f),
                     Min = 0f, Max = 1f
                 };
+                loopField.Draw();
                 normalizedTimeField.Draw();
             }
         }

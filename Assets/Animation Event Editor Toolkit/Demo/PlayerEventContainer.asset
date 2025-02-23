@@ -9,15 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1f5372c9c1742efb5c9349815401145, type: 3}
-  m_Name: AnimationEventDataContainer
+  m_Script: {fileID: 11500000, guid: 75867939d6c09454b99f7e8e4d3fbb91, type: 3}
+  m_Name: PlayerEventContainer
   m_EditorClassIdentifier: 
   animationEventDataList:
   - id: 1
-    title: TestEvent/Test1
+    title: Sounds/FootStep
     loop: 0
     normalizedTime: 0
   - id: 2
-    title: TestEvent/Test2
+    title: Sounds/Hit
+    loop: 0
+    normalizedTime: 0
+  - id: 3
+    title: Effects/FootStep
     loop: 0
     normalizedTime: 0

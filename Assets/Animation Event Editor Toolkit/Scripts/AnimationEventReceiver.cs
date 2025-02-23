@@ -19,6 +19,7 @@ namespace KMS.AnimationToolkit
         }
     }
     
+    [RequireComponent(typeof(Animator))]
     public class AnimationEventReceiver : MonoBehaviour
     {
         [SerializeField] private AnimationEventDataContainer container;
