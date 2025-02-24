@@ -1,0 +1,11 @@
+{
+  "name": "com.kms.animationeventtoolkit",
+  "version": "1.0.0",
+  "displayName": "Animation Event Toolkit",
+  "description": "This is a package that enhances the functionality of animation events.",
+  "unity": "2022.3",
+  "author": {
+    "name": "Kimminsoo",
+    "email": "minhahas43@gmail.com"
+  }
+}

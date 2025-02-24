@@ -1,0 +1,16 @@
+{
+    "name": "AnimationEventEditorToolEditor",
+    "rootNamespace": "KMS",
+    "references": [
+        "GUID:b832911669e75a44690100e39f06c4c3"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
