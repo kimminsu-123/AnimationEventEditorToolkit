@@ -23,6 +23,12 @@ namespace KMS.AnimationToolkit
                 Initialize(animator);
             }
 
+            for (var index = 0; index < eventReachedNormalizedTime.Count; index++)
+            {
+                AnimationEventData data = eventReachedNormalizedTime[index];
+		data.HasCalled = false;
+            }
+
             for (var index = 0; index < eventStateEnter.Count; index++)
             {
                 AnimationEventData data = eventStateEnter[index];
